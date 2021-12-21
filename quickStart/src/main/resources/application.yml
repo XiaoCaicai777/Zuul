@@ -1,0 +1,47 @@
+server:
+  port: 8001
+spring:
+  application:
+    name: quick-start
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8000/eureka
+    register-with-eureka: true
+    fetch-registry: true
+zuul:
+  SendErrorFilter:
+    error:
+      disable: true
+  routes:
+    item:
+      path: /item/**
+      serviceId: user-item-service
+    user:
+      path: /user/**
+      serviceId: user-service
+#      url: http://www.baidu.com
+
+#  ignored-services: user-item-service
+hystrix:
+  command:
+    my-userService:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds:2000  #配置HystrixCommand执行的超时时间，执行超过该时间会进行服务降级处理
+
+          #Ribbon的配置来设置路由转发时请求连接及处理的超时时间，这里是上面的路由没问题， 可以找到服务，然后去调用服务后
+          #这里如果服务处理时间长，然后超时，会走到errorfilter处理
+ribbon:
+  ReadTimeout: 1000
+  SocketTimeout: 1000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream,health,info,routes
+
+error:
+  path: http://localhost:8001/error
